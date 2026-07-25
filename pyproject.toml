@@ -1,0 +1,52 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "hermes-skills-backup"
+version = "0.2.0"
+description = "Backup, validate, verify, and restore all Hermes Agent skill profiles as portable snapshots"
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+authors = [{ name = "Hermes Agent User" }]
+keywords = ["hermes", "skills", "backup", "snapshot", "restore"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: MacOS",
+    "Operating System :: POSIX :: Linux",
+]
+dependencies = [
+    "PyYAML>=6.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.2",
+    "pytest-cov>=5.0",
+]
+
+[project.scripts]
+hsb-snapshot = "hermes_skills_backup.snapshot:main"
+hsb-validate = "hermes_skills_backup.validate:main"
+hsb-verify   = "hermes_skills_backup.verify:main"
+hsb-restore  = "hermes_skills_backup.restore:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts   = "-v --tb=short"
+
+[tool.coverage.run]
+source = ["src/hermes_skills_backup"]
+
+[tool.coverage.report]
+show_missing = true

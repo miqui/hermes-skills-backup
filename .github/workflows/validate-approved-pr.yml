@@ -1,0 +1,43 @@
+name: Validate Approved PR
+
+# Fires only when a review is submitted on a pull request. The job itself
+# further restricts to the "approved" review state below. No other event
+# triggers this workflow (no push, no pull_request, no workflow_dispatch).
+on:
+  pull_request_review:
+    types: [submitted]
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    if: github.event.review.state == 'approved'
+    runs-on: ubuntu-latest
+    steps:
+      # actions/checkout pinned by commit SHA (v4.2.2) rather than a
+      # mutable tag, per supply-chain hardening guidance.
+      - name: Checkout PR head commit
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b # v5.3.0
+        with:
+          python-version: "3.11"
+
+      - name: Install package
+        run: python -m pip install -e ".[dev]"
+
+      - name: Run test suite
+        run: python -m pytest -q
+
+      - name: Validate any committed snapshots
+        run: |
+          if [ -d snapshots ] && [ -n "$(ls -A snapshots 2>/dev/null)" ]; then
+            python -m hermes_skills_backup.validate --all --snapshots-dir snapshots
+          else
+            echo "No snapshots present under snapshots/ — skipping."
+          fi
