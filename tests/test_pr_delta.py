@@ -50,6 +50,39 @@ def test_delta_comment_lists_only_changed_skills(hermes_home: Path, tmp_path: Pa
     assert "skill-gamma" not in comment
 
 
+def test_delta_comment_finds_marker_on_a_later_comment_page() -> None:
+    calls: list[tuple[str, str, object | None]] = []
+
+    def request_json(method: str, url: str, token: str, payload: object | None = None) -> object:
+        calls.append((method, url, payload))
+        if method == "GET" and url.endswith("?per_page=100&page=1"):
+            return [{"id": item, "body": "unrelated"} for item in range(100)]
+        if method == "GET" and url.endswith("?per_page=100&page=2"):
+            return [{"id": 42, "body": f"old\n{COMMENT_MARKER}"}]
+        assert method == "PATCH"
+        return {"id": 42}
+
+    result = upsert_pull_request_comment(
+        api_base="https://api.github.example",
+        repository="owner/repo",
+        pull_request_number=9,
+        token="test-token",
+        body=f"new\n{COMMENT_MARKER}",
+        request_json=request_json,
+    )
+
+    assert result == "updated"
+    assert calls == [
+        ("GET", "https://api.github.example/repos/owner/repo/issues/9/comments?per_page=100&page=1", None),
+        ("GET", "https://api.github.example/repos/owner/repo/issues/9/comments?per_page=100&page=2", None),
+        (
+            "PATCH",
+            "https://api.github.example/repos/owner/repo/issues/comments/42",
+            {"body": f"new\n{COMMENT_MARKER}"},
+        ),
+    ]
+
+
 def test_delta_comment_is_idempotently_updated_when_marker_exists() -> None:
     calls: list[tuple[str, str, object | None]] = []
 
@@ -71,7 +104,7 @@ def test_delta_comment_is_idempotently_updated_when_marker_exists() -> None:
 
     assert result == "updated"
     assert calls == [
-        ("GET", "https://api.github.example/repos/owner/repo/issues/9/comments?per_page=100", None),
+        ("GET", "https://api.github.example/repos/owner/repo/issues/9/comments?per_page=100&page=1", None),
         (
             "PATCH",
             "https://api.github.example/repos/owner/repo/issues/comments/42",
@@ -101,7 +134,7 @@ def test_delta_comment_is_created_when_marker_is_absent() -> None:
 
     assert result == "created"
     assert calls == [
-        ("GET", "https://api.github.example/repos/owner/repo/issues/9/comments?per_page=100", None),
+        ("GET", "https://api.github.example/repos/owner/repo/issues/9/comments?per_page=100&page=1", None),
         (
             "POST",
             "https://api.github.example/repos/owner/repo/issues/9/comments",

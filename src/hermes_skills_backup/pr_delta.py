@@ -183,17 +183,23 @@ def upsert_pull_request_comment(
     """Create or update the single marker-owned delta comment for a PR."""
     api_base = api_base.rstrip("/")
     issue_base = f"{api_base}/repos/{repository}/issues/{pull_request_number}/comments"
-    existing = request_json("GET", f"{issue_base}?per_page=100", token)
-    if not isinstance(existing, list):
-        raise RuntimeError("GitHub API comments response was not a list")
+    for page in range(1, 10_001):
+        existing = request_json("GET", f"{issue_base}?per_page=100&page={page}", token)
+        if not isinstance(existing, list):
+            raise RuntimeError("GitHub API comments response was not a list")
 
-    for comment in existing:
-        if isinstance(comment, Mapping) and COMMENT_MARKER in str(comment.get("body", "")):
-            comment_id = comment.get("id")
-            if not isinstance(comment_id, int):
-                raise RuntimeError("GitHub API comment had no numeric id")
-            request_json("PATCH", f"{api_base}/repos/{repository}/issues/comments/{comment_id}", token, {"body": body})
-            return "updated"
+        for comment in existing:
+            if isinstance(comment, Mapping) and COMMENT_MARKER in str(comment.get("body", "")):
+                comment_id = comment.get("id")
+                if not isinstance(comment_id, int):
+                    raise RuntimeError("GitHub API comment had no numeric id")
+                request_json("PATCH", f"{api_base}/repos/{repository}/issues/comments/{comment_id}", token, {"body": body})
+                return "updated"
+
+        if len(existing) < 100:
+            break
+    else:
+        raise RuntimeError("GitHub API comments pagination exceeded 10,000 pages")
 
     request_json("POST", issue_base, token, {"body": body})
     return "created"
