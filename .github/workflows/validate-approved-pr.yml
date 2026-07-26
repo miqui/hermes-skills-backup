@@ -1,18 +1,15 @@
-name: Validate Approved PR
+name: Validate Pull Request
 
-# Fires only when a review is submitted on a pull request. The job itself
-# further restricts to the "approved" review state below. No other event
-# triggers this workflow (no push, no pull_request, no workflow_dispatch).
+# Run validation for every normal pull-request lifecycle event. This includes
+# opening PRs, pushing new commits, and reopening an existing PR.
 on:
-  pull_request_review:
-    types: [submitted]
+  pull_request:
 
 permissions:
   contents: read
 
 jobs:
   validate:
-    if: github.event.review.state == 'approved'
     runs-on: ubuntu-latest
     steps:
       # actions/checkout pinned by commit SHA (v4.2.2) rather than a
