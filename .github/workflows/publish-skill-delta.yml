@@ -1,0 +1,79 @@
+name: Publish Skill Delta
+
+# This trusted writer intentionally uses pull_request_target, but it never
+# checks out or executes PR-head code. It runs the base revision's reviewed
+# code and reads only manifest JSON from same-repository PR heads.
+on:
+  pull_request_target:
+    types: [opened, reopened, synchronize]
+  workflow_dispatch:
+    inputs:
+      pull_request_number:
+        description: Existing pull request number to receive the delta comment
+        required: true
+        type: string
+      base_sha:
+        description: Trusted base commit SHA
+        required: true
+        type: string
+      head_sha:
+        description: Same-repository PR head commit SHA containing manifests
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  comment-skill-delta:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    concurrency:
+      group: hermes-skills-delta-${{ inputs.pull_request_number || github.event.pull_request.number }}
+      cancel-in-progress: true
+    steps:
+      - name: Checkout trusted base revision
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b # v5.3.0
+        with:
+          python-version: "3.11"
+
+      - name: Install trusted base package
+        run: python -m pip install -e ".[dev]"
+
+      - name: Read PR manifests and publish concise skill delta
+        env:
+          BASE_SHA: ${{ inputs.base_sha || github.event.pull_request.base.sha }}
+          GITHUB_TOKEN: ${{ github.token }}
+          HEAD_SHA: ${{ inputs.head_sha || github.event.pull_request.head.sha }}
+          PULL_REQUEST_NUMBER: ${{ inputs.pull_request_number || github.event.pull_request.number }}
+        run: |
+          set -euo pipefail
+          git fetch --no-tags --depth=1 origin "$HEAD_SHA"
+          snapshot_ids="$(
+            git diff --name-only "$BASE_SHA" "$HEAD_SHA" -- 'snapshots/*/MANIFEST.json' \
+              | sed -n 's#^snapshots/\([^/]*\)/MANIFEST\.json$#\1#p' \
+              | sort -u
+          )"
+          if [ -z "$snapshot_ids" ]; then
+            echo "No changed snapshot manifests; no comment is needed."
+            exit 0
+          fi
+          while IFS= read -r snapshot_id; do
+            [[ "$snapshot_id" =~ ^[0-9]{8}T[0-9]{6}Z-[0-9a-f]{8}$ ]] || {
+              echo "Unexpected snapshot ID: $snapshot_id" >&2
+              exit 1
+            }
+            git checkout "$HEAD_SHA" -- "snapshots/$snapshot_id/MANIFEST.json"
+          done <<< "$snapshot_ids"
+          export SNAPSHOT_IDS="$snapshot_ids"
+          python -m hermes_skills_backup.pr_delta --snapshots-dir snapshots

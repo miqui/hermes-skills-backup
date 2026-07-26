@@ -94,41 +94,6 @@ jobs:
               --snapshot-id "$snapshot_id"
           done <<< "$SNAPSHOT_IDS"
 
-  comment-skill-delta:
-    # Never use pull_request_target for this: it would grant write credentials
-    # while executing PR-controlled code. Fork PRs keep the read-only checks
-    # above; same-repository PRs receive the concise review comment.
-    needs: detect-changed-snapshots
-    if: >-
-      github.event_name == 'pull_request' &&
-      needs.detect-changed-snapshots.outputs.snapshot_ids != '' &&
-      github.event.pull_request.head.repo.full_name == github.repository
-    permissions:
-      contents: read
-      issues: write
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout PR head commit
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
-          persist-credentials: false
-
-      - name: Set up Python
-        uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b # v5.3.0
-        with:
-          python-version: "3.11"
-
-      - name: Install package
-        run: python -m pip install -e ".[dev]"
-
-      - name: Publish concise skill delta
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-          PULL_REQUEST_NUMBER: ${{ github.event.pull_request.number }}
-          SNAPSHOT_IDS: ${{ needs.detect-changed-snapshots.outputs.snapshot_ids }}
-        run: python -m hermes_skills_backup.pr_delta --snapshots-dir snapshots
-
   audit-all-snapshots:
     # Legacy snapshots can retain historical validation debt. The audit remains
     # visible and runs weekly/on-demand without blocking unrelated PR reviews.
