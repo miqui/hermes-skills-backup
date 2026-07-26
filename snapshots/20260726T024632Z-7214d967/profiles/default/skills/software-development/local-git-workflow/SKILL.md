@@ -1,7 +1,7 @@
 ---
 name: local-git-workflow
 description: "Use when repository creation, pushes, branch publication, or pull-request workflows in this local environment must go through `/Users/miqui/development/scripts/git-workflow.sh` rather than raw git, gh, or API workarounds."
-version: 1.0.0
+version: 1.0.1
 author: Hermes Agent
 license: MIT
 metadata:
@@ -58,18 +58,20 @@ When creating new repositories in this environment, place them under:
 
 ### Wrapper behavior snapshot
 
-The current `/Users/miqui/development/scripts/git-workflow.sh` implementation supports only two subcommands:
+The current `/Users/miqui/development/scripts/git-workflow.sh` implementation supports four subcommands:
 
 - `init`
 - `change`
+- `update`
+- `pr`
 
 It does **not** expose a `--help` flag. Invoking `--help` currently returns an error like:
 
 ```text
-[git-workflow] ERROR: Unknown command '--help'. Use: init | change
+[git-workflow] ERROR: Unknown command '--help'. Use: init | change | update | pr
 ```
 
-Plan to call one of the two supported subcommands directly instead of probing for help text first.
+Plan to call one of the supported subcommands directly instead of probing for help text first.
 
 ### `init`
 
@@ -105,8 +107,39 @@ Current wrapper behavior during `change`:
 - auto-generates the branch name from the commit message when no explicit branch name is supplied
 - auto-stages all changes with `git add -A` if nothing is already staged
 - commits, pushes the branch, and opens a pull request against `main`
+- limits generated PR-body diff statistics to stay under GitHub's 65,536-character body limit
 
-Use Conventional Commits such as:
+### `update`
+
+Use when an existing non-`main` PR branch needs another commit, such as a CI/workflow fix. Do not use `change`: it creates a new branch and PR.
+
+```bash
+bash /Users/miqui/development/scripts/git-workflow.sh update "ci: trigger validation for every pull request"
+```
+
+Current wrapper behavior during `update`:
+
+- verifies GitHub connectivity and that current non-`main` branch exists on `origin`
+- stages all changes only when index is empty; stage an explicit allowlist for mixed worktrees
+- commits and pushes the current branch, updating its existing PR
+- does not create a second PR
+
+### `pr`
+
+Use only when `change` has already committed and pushed the current feature branch but PR creation did not complete, such as a transient GitHub failure or a formerly oversized generated PR body:
+
+```bash
+bash /Users/miqui/development/scripts/git-workflow.sh pr "feat: add caveman skill corpus snapshot"
+```
+
+Current wrapper behavior during `pr`:
+
+- verifies GitHub connectivity
+- requires a non-`main` branch that already exists on `origin`
+- uses the supplied title, or the current commit subject when omitted
+- opens the PR against `main` using the same bounded body generator as `change`
+
+Do not use raw `gh pr create` to resume a partial-success publish. Use `pr` after inspecting the branch, pushed commit, and worktree.
 
 - `feat:`
 - `fix:`
@@ -137,7 +170,7 @@ Use Conventional Commits such as:
 
 Before invoking the wrapper:
 
-1. Confirm whether this is the first commit (`init`) or a later change (`change`)
+1. Confirm whether this is the first commit (`init`), a new PR (`change`), or an update to an existing PR branch (`update`)
 2. If this is a new repository, initialize a local Git repository first. The current wrapper aborts immediately unless `.git/` already exists, so the normal preparation step is `git init -b main` (or equivalent) before calling `bash /Users/miqui/development/scripts/git-workflow.sh init ...`.
 3. If this is a new repository, verify the local directory name is also a valid GitHub repository name. Avoid characters that GitHub rejects or that may be normalized differently than the local directory name. In particular, do not start a new wrapper-managed repo from a directory containing `+`; rename it to a GitHub-safe slug such as lowercase letters, digits, and hyphens first.
 4. Verify branch and modified files with `git status --porcelain=v1 --branch`
@@ -182,9 +215,11 @@ Common examples:
 ## Cross-References
 
 - `references/git-workflow-wrapper-gotchas.md` documents wrapper auto-stage edge cases and partial-success PR-creation failures.
+- `references/large-pr-body-recovery.md` documents recovery when a pushed branch's generated PR body exceeds GitHub's limit, including the required wrapper `pr` resume command.
 - `references/github-safe-repo-names.md` documents a repo-naming pitfall for wrapper-managed publication, especially local directory names containing `+`.
 - `references/greenfield-scaffold-publication-checklist.md` documents the recommended first-publish sequence for newly scaffolded local apps, including ignore-file hygiene, verification before publish, and post-publish metadata updates.
 - `references/token-efficient-git-inspection.md` defines porcelain-status and summary-first-diff guidance when Git output enters an agent context.
+- `references/pr-pipeline-trigger-triage.md` covers diagnosing an open PR with no checks, correcting `pull_request` triggers, and separating dispatch failures from validation failures.
 - Use `go-builder` for Go project structure, framework, testing, Docker, and build guidance
 - Use `github-pr-workflow` for general PR lifecycle knowledge when environment-specific wrapper constraints are not the main concern
 - Use `github-repo-management` for broader repository operations outside this machine-specific policy
@@ -210,7 +245,7 @@ Common examples:
    In that split-publication case, verify the staged set with `git diff --cached --stat`, verify the unstaged remainder with `git diff --stat`, then invoke the wrapper. The wrapper may still print `Warning: <N> uncommitted changes` when opening the PR; treat that as informational if you intentionally staged only the reviewable subset, but confirm afterward that the remaining local-only files are still uncommitted.
 
 7. Probing the wrapper with `--help` and treating the resulting error as a workflow failure.
-   The current script only accepts `init` and `change`; it does not implement a help flag.
+   The current script accepts `init`, `change`, `update`, and `pr`; it does not implement a help flag.
 
 8. Hiding raw publication steps inside convenience scripts.
    A local helper with flags like `--push` is still subject to this workflow. If it performs `git push`, `gh pr create`, or other GitHub write-side actions directly, it is non-compliant and should be changed to hand off to `/Users/miqui/development/scripts/git-workflow.sh` instead of bypassing it.
@@ -231,7 +266,7 @@ Common examples:
 
 - [ ] The task actually involves write-side GitHub workflow on this machine
 - [ ] The repository lives under `/Users/miqui/development/` when creating a new local project
-- [ ] `init` vs `change` was chosen correctly
+- [ ] `init`, `change`, `update`, or `pr` was chosen correctly
 - [ ] The wrapper script path is `/Users/miqui/development/scripts/git-workflow.sh`
 - [ ] No raw `git push`, `gh pr create`, `gh repo create`, or API workaround was used
 - [ ] If the wrapper failed, the failure was surfaced instead of bypassed

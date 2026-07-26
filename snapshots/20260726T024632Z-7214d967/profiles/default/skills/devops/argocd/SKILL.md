@@ -1,6 +1,6 @@
 ---
 name: argocd
-description: Use when operating Argo CD for core GitOps workflows: application create/get/sync/delete, project and repository management, cluster registration, account tokens, REST API calls, and day-to-day troubleshooting.
+description: "Use when operating Argo CD for core GitOps workflows: application create/get/sync/delete, project and repository management, cluster registration, account tokens, REST API calls, and day-to-day troubleshooting."
 version: 1.1.0
 author: Hermes Agent
 license: MIT

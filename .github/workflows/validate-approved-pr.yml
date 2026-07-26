@@ -1,19 +1,22 @@
-name: Validate Pull Request
+name: Validate Snapshots
 
-# Run validation for every normal pull-request lifecycle event. This includes
-# opening PRs, pushing new commits, and reopening an existing PR.
+# Every PR runs the test suite and validates only snapshot artifacts changed by
+# that PR. Historical full-corpus audit is separate so legacy warnings do not
+# obscure review of a proposed snapshot.
 on:
   pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 4 * * 1"
 
 permissions:
   contents: read
 
 jobs:
-  validate:
+  test:
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
-      # actions/checkout pinned by commit SHA (v4.2.2) rather than a
-      # mutable tag, per supply-chain hardening guidance.
       - name: Checkout PR head commit
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
@@ -31,10 +34,85 @@ jobs:
       - name: Run test suite
         run: python -m pytest -q
 
-      - name: Validate any committed snapshots
+  detect-changed-snapshots:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    outputs:
+      snapshot_ids: ${{ steps.changed.outputs.snapshot_ids }}
+    steps:
+      - name: Checkout PR history
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Identify changed snapshot manifests
+        id: changed
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
-          if [ -d snapshots ] && [ -n "$(ls -A snapshots 2>/dev/null)" ]; then
-            python -m hermes_skills_backup.validate --all --snapshots-dir snapshots
-          else
-            echo "No snapshots present under snapshots/ — skipping."
-          fi
+          snapshot_ids="$(
+            git diff --name-only "$BASE_SHA" "$HEAD_SHA" -- 'snapshots/*/MANIFEST.json' \
+              | sed -n 's#^snapshots/\([^/]*\)/MANIFEST\.json$#\1#p' \
+              | sort -u
+          )"
+          {
+            echo 'snapshot_ids<<EOF'
+            printf '%s\n' "$snapshot_ids"
+            echo 'EOF'
+          } >> "$GITHUB_OUTPUT"
+
+  validate-changed-snapshots:
+    needs: detect-changed-snapshots
+    if: needs.detect-changed-snapshots.outputs.snapshot_ids != ''
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout PR head commit
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b # v5.3.0
+        with:
+          python-version: "3.11"
+
+      - name: Install package
+        run: python -m pip install -e ".[dev]"
+
+      - name: Validate changed snapshots
+        env:
+          SNAPSHOT_IDS: ${{ needs.detect-changed-snapshots.outputs.snapshot_ids }}
+        run: |
+          while IFS= read -r snapshot_id; do
+            [ -z "$snapshot_id" ] && continue
+            python -m hermes_skills_backup.validate \
+              --snapshots-dir snapshots \
+              --snapshot-id "$snapshot_id"
+          done <<< "$SNAPSHOT_IDS"
+
+  audit-all-snapshots:
+    # Legacy snapshots can retain historical validation debt. The audit remains
+    # visible and runs weekly/on-demand without blocking unrelated PR reviews.
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    continue-on-error: true
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b # v5.3.0
+        with:
+          python-version: "3.11"
+
+      - name: Install package
+        run: python -m pip install -e ".[dev]"
+
+      - name: Audit every committed snapshot
+        run: python -m hermes_skills_backup.validate --all --snapshots-dir snapshots

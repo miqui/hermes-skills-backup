@@ -1,7 +1,7 @@
 # Restore Instructions
 
-Snapshot ID: `20260726T020839Z-59c4ce3a`
-Created (UTC): 2026-07-26T02:08:39Z
+Snapshot ID: `20260726T024632Z-7214d967`
+Created (UTC): 2026-07-26T02:46:32Z
 Profiles included: default
 
 This snapshot was produced by the `hermes-skills-backup` project and can be
@@ -12,7 +12,7 @@ restored with its `hsb-restore` command-line tool.
 ```
 hsb-restore \
   --snapshots-dir <path-to-snapshots-dir> \
-  --snapshot-id 20260726T020839Z-59c4ce3a \
+  --snapshot-id 20260726T024632Z-7214d967 \
   --target-hermes-home <path-to-target-hermes-home>
 ```
 
@@ -21,7 +21,7 @@ hsb-restore \
 ```
 hsb-restore \
   --snapshots-dir <path-to-snapshots-dir> \
-  --snapshot-id 20260726T020839Z-59c4ce3a \
+  --snapshot-id 20260726T024632Z-7214d967 \
   --target-hermes-home <path-to-target-hermes-home> \
   --apply
 ```

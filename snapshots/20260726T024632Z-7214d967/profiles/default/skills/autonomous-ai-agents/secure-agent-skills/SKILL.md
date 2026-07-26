@@ -285,6 +285,17 @@ A common failure mode is proving a secret exists by printing it. That is not ver
 - local presence check reported as boolean only,
 - confirmation that ignore/redaction/scan controls exist.
 
+## CI Secret-Scan Evidence Hygiene
+
+When a CI or backup validator scans skills, snapshots, templates, or reference documents for likely secrets:
+
+- Preserve high-confidence signatures (provider token formats, cloud key IDs, private-key blocks) while treating broad credential-assignment patterns as heuristics.
+- Guard broad patterns against obvious code expressions. For example, an assignment such as `accessToken = jwtService.generateToken(...)` is not a literal credential merely because the variable name contains `accessToken`.
+- Add a regression test for every false-positive rule refinement and a companion synthetic positive case, so precision improves without silently weakening detection.
+- Emit only **path, category, and line number** in CI findings. Never print the matched value, including in test diagnostics, workflow summaries, or annotations.
+- Separate two concerns in CI: validate artifacts introduced or changed by the PR as the PR gate; run all-history scans on a scheduled/manual audit. This keeps legacy warning debt reviewable without drowning out the current change.
+- Do not broadly allowlist a file, skill, or credential-name family solely to silence noise. Prefer a narrow, explainable pattern refinement with regression coverage.
+
 ## Verification Checklist
 
 - [ ] Provenance of the skill content is known and recorded, or lack of provenance is explicitly treated as a risk

@@ -82,7 +82,7 @@ SECRET_PATTERNS: List[Tuple[str, "re.Pattern[str]"]] = [
     ("generic_credential_assignment", re.compile(
         r'(?i)\b(api[-_]?key|secret[-_]?key|access[-_]?token|auth[-_]?token'
         r'|password|private[-_]?key|client[-_]?secret)\b\s*[=:]\s*'
-        r'["\']?[A-Za-z0-9/_\-+=]{8,}'
+        r'["\']?[A-Za-z0-9/_\-+=]{8,}(?=$|[\s,;#\'"\]\)}])'
     )),
     ("openai_style_key", re.compile(r'\bsk-[A-Za-z0-9]{20,}\b')),
     ("github_token", re.compile(r'\bgh[pousr]_[A-Za-z0-9]{36,}\b')),
@@ -326,8 +326,8 @@ def is_dangerous_target(target: Path) -> Optional[str]:
 # Secrets detection
 # ---------------------------------------------------------------------------
 
-def scan_file_for_secrets(path: Path) -> List[str]:
-    """Return the list of secret *categories* (never values) found in a file."""
+def scan_file_for_secret_findings(path: Path) -> List[Tuple[str, int]]:
+    """Return (category, 1-based line number) findings without secret values."""
     if path.suffix.lower() not in _TEXT_EXTENSIONS:
         return []
     try:
@@ -337,11 +337,18 @@ def scan_file_for_secrets(path: Path) -> List[str]:
     except OSError:
         return []
 
-    found = []
+    findings = []
     for category, pattern in SECRET_PATTERNS:
-        if pattern.search(text):
-            found.append(category)
-    return found
+        match = pattern.search(text)
+        if match:
+            line_number = text.count("\n", 0, match.start()) + 1
+            findings.append((category, line_number))
+    return findings
+
+
+def scan_file_for_secrets(path: Path) -> List[str]:
+    """Return secret categories without values or line-level finding details."""
+    return [category for category, _ in scan_file_for_secret_findings(path)]
 
 
 def scan_tree_for_secrets(files: List[Path]) -> List[Tuple[str, str]]:

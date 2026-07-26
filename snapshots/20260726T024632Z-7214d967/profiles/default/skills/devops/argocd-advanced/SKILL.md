@@ -1,6 +1,6 @@
 ---
 name: argocd-advanced
-description: Use when working on advanced Argo CD automation: ApplicationSet generators and templating, Argo CD Image Updater, new-cluster bootstrapping, workload onboarding patterns, and related troubleshooting.
+description: "Use when working on advanced Argo CD automation: ApplicationSet generators and templating, Argo CD Image Updater, new-cluster bootstrapping, workload onboarding patterns, and related troubleshooting."
 version: 1.1.0
 author: Hermes Agent
 license: MIT
