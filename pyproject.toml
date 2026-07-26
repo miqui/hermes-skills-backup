@@ -37,6 +37,7 @@ hsb-snapshot = "hermes_skills_backup.snapshot:main"
 hsb-validate = "hermes_skills_backup.validate:main"
 hsb-verify   = "hermes_skills_backup.verify:main"
 hsb-restore  = "hermes_skills_backup.restore:main"
+hsb-pr-delta = "hermes_skills_backup.pr_delta:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
