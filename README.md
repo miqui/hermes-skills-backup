@@ -20,8 +20,8 @@ python -m venv .venv
 .venv/bin/pip install -e ".[dev]"
 ```
 
-This provides four console scripts: `hsb-snapshot`, `hsb-validate`,
-`hsb-verify`, and `hsb-restore`.
+This provides five console scripts: `hsb-snapshot`, `hsb-validate`,
+`hsb-verify`, `hsb-restore`, and `hsb-pr-delta`.
 
 ## Snapshot layout
 
@@ -110,6 +110,23 @@ directories being restored are ever replaced — nothing else under the
 target, and nothing outside the target, is ever modified or deleted. See
 [docs/branch-protection.md](docs/branch-protection.md) for the manual
 restore runbook used alongside this project's GitHub branch protection.
+
+## Pull-request delta summary
+
+Snapshots intentionally remain complete, standalone artifacts, so a snapshot
+PR copies the whole current corpus even when only a few skills changed. On a
+same-repository pull request that adds a snapshot, CI compares its manifest to
+the immediately preceding snapshot and creates or updates one marked PR
+comment listing only the **new**, **modified**, and **removed** skill roots.
+It does not disclose content or secret-scanner matches.
+
+Fork-originated PRs retain read-only validation but do not receive this
+comment: the workflow deliberately avoids `pull_request_target` and does not
+run untrusted PR code with write credentials.
+
+`hsb-pr-delta` is the CI entry point. It requires `GITHUB_TOKEN`,
+`GITHUB_REPOSITORY`, and a PR number; normally the workflow supplies those
+values rather than users running it manually.
 
 ## Development
 

@@ -59,20 +59,21 @@ There is no default `--target-hermes-home` — you must name one every time.
 
 ## GitHub branch protection
 
-This repository's CI (`.github/workflows/validate-approved-pr.yml`) only
-runs `pull_request_review` events where the review was **approved**, and
-checks out the exact commit that was reviewed (the PR head SHA) rather than
-a possibly-updated branch tip. That guarantee is only meaningful if the
-default branch is configured, in GitHub's repository settings, with rules
-along these lines:
+This repository's CI (`.github/workflows/validate-approved-pr.yml`) runs its
+tests and changed-snapshot validation for every pull-request lifecycle update
+and checks out the exact PR head SHA. For snapshot PRs from branches in this
+repository, it also posts one concise, marker-owned delta comment that lists
+only new, modified, and removed skill roots; full snapshots remain intact for
+standalone restore. Fork PRs receive read-only checks only, avoiding unsafe
+write credentials for untrusted code. The default branch should be configured
+in GitHub's repository settings with rules along these lines:
 
 1. **Require a pull request before merging.** Direct pushes to the default
    branch are disabled; all changes land through a PR.
 
-2. **Require at least one approving review.** The workflow's `if:
-   github.event.review.state == 'approved'` gate assumes some human (or
-   required reviewer) actually approved the PR — branch protection is what
-   makes that approval mandatory rather than advisory.
+2. **Require at least one approving review.** Branch protection makes human
+   approval mandatory rather than advisory; CI executes on every PR update so
+   reviewers can see validation and the generated delta before approval.
 
 3. **Dismiss stale approvals when new commits are pushed.** Enable "Dismiss
    stale pull request approvals when new commits are pushed" so that an
@@ -80,10 +81,11 @@ along these lines:
    counterpart to the workflow checking out `github.event.pull_request.head.sha`
    rather than a moving branch ref.
 
-4. **Require the status check from this workflow to pass**, using its exact
-   job name (`validate`) as it appears once the workflow has run at least
-   once on a PR against this branch. Do not require a check by workflow file
-   name — GitHub matches status checks by job name.
+4. **Require the status checks from this workflow to pass**, using their exact
+   job names (`test`, `detect-changed-snapshots`, and, when a snapshot changes,
+   `validate-changed-snapshots`) as they appear once the workflow has run at
+   least once on a PR against this branch. Do not require a check by workflow
+   file name — GitHub matches status checks by job name.
 
 5. **Do not allow bypassing the above** — disable "Allow specified actors to
    bypass required pull requests" (or, on rulesets, leave bypass lists
