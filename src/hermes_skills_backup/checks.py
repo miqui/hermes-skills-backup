@@ -29,7 +29,7 @@ from hermes_skills_backup.common import (
     profile_skills_rel_path,
     read_manifest,
     safe_relpath_join,
-    scan_file_for_secrets,
+    scan_file_for_secret_findings,
     snapshot_profile_skills_dir,
     walk_tree,
 )
@@ -306,8 +306,13 @@ def check_secrets(snapshot_dir: Path, manifest: dict, strict: bool = False) -> L
                 continue
             if not full.is_file():
                 continue
-            for category in scan_file_for_secrets(full):
-                issues.append(Issue(severity, "secret", str(full), f"likely secret detected (category={category})"))
+            for category, line_number in scan_file_for_secret_findings(full):
+                issues.append(Issue(
+                    severity,
+                    "secret",
+                    str(full),
+                    f"likely secret detected (category={category}, line={line_number})",
+                ))
     return issues
 
 

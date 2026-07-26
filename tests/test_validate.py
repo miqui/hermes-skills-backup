@@ -5,7 +5,13 @@ import json
 from pathlib import Path
 
 from hermes_skills_backup.checks import has_errors, validate_snapshot, verify_snapshot
-from hermes_skills_backup.common import MANIFEST_FILENAME, read_manifest, write_manifest
+from hermes_skills_backup.common import (
+    MANIFEST_FILENAME,
+    read_manifest,
+    scan_file_for_secret_findings,
+    scan_file_for_secrets,
+    write_manifest,
+)
 from hermes_skills_backup.snapshot import create_snapshot
 
 
@@ -97,6 +103,29 @@ def test_corrupt_json_manifest_flagged(hermes_home: Path, tmp_path: Path) -> Non
     manifest, issues = verify_snapshot(snapshot_dir)
     assert manifest is None
     assert has_errors(issues)
+
+
+def test_generic_credential_scan_ignores_dotted_code_expression(tmp_path: Path) -> None:
+    source = tmp_path / "security.md"
+    source.write_text("```java\nString accessToken = jwtService.generateToken(userDetails);\n```\n")
+
+    assert "generic_credential_assignment" not in scan_file_for_secrets(source)
+
+
+def test_generic_credential_scan_flags_literal_assignment(tmp_path: Path) -> None:
+    source = tmp_path / "configuration.md"
+    source.write_text("ACCESS_TOKEN=synthetic-token-value-123456\n")
+
+    assert "generic_credential_assignment" in scan_file_for_secrets(source)
+
+
+def test_secret_scan_returns_category_and_line_without_value(tmp_path: Path) -> None:
+    source = tmp_path / "configuration.md"
+    source.write_text("# Example\nACCESS_TOKEN=synthetic-token-value-123456\n")
+
+    assert scan_file_for_secret_findings(source) == [
+        ("generic_credential_assignment", 2),
+    ]
 
 
 def test_secret_in_snapshot_flagged_as_warning_by_default(hermes_home: Path, tmp_path: Path) -> None:
