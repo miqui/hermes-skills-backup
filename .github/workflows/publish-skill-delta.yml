@@ -6,6 +6,20 @@ name: Publish Skill Delta
 on:
   pull_request_target:
     types: [opened, reopened, synchronize]
+  workflow_dispatch:
+    inputs:
+      pull_request_number:
+        description: Existing pull request number to receive the delta comment
+        required: true
+        type: string
+      base_sha:
+        description: Trusted base commit SHA
+        required: true
+        type: string
+      head_sha:
+        description: Same-repository PR head commit SHA containing manifests
+        required: true
+        type: string
 
 permissions:
   contents: read
@@ -13,10 +27,12 @@ permissions:
 
 jobs:
   comment-skill-delta:
-    if: github.event.pull_request.head.repo.full_name == github.repository
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     concurrency:
-      group: hermes-skills-delta-${{ github.event.pull_request.number }}
+      group: hermes-skills-delta-${{ inputs.pull_request_number || github.event.pull_request.number }}
       cancel-in-progress: true
     steps:
       - name: Checkout trusted base revision
@@ -36,10 +52,10 @@ jobs:
 
       - name: Read PR manifests and publish concise skill delta
         env:
-          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          BASE_SHA: ${{ inputs.base_sha || github.event.pull_request.base.sha }}
           GITHUB_TOKEN: ${{ github.token }}
-          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
-          PULL_REQUEST_NUMBER: ${{ github.event.pull_request.number }}
+          HEAD_SHA: ${{ inputs.head_sha || github.event.pull_request.head.sha }}
+          PULL_REQUEST_NUMBER: ${{ inputs.pull_request_number || github.event.pull_request.number }}
         run: |
           set -euo pipefail
           git fetch --no-tags --depth=1 origin "$HEAD_SHA"
