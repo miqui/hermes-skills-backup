@@ -167,7 +167,18 @@ def _github_request(method: str, url: str, token: str, payload: object | None = 
         with urlopen(request, timeout=30) as response:  # noqa: S310 - GitHub API URL is CI-configured.
             return json.loads(response.read().decode("utf-8"))
     except HTTPError as exc:
-        raise RuntimeError(f"GitHub API request failed with HTTP {exc.code}") from exc
+        detail = ""
+        try:
+            error_payload = json.loads(exc.read().decode("utf-8"))
+        except (OSError, UnicodeDecodeError, json.JSONDecodeError):
+            error_payload = None
+        if isinstance(error_payload, Mapping):
+            message = error_payload.get("message")
+            if isinstance(message, str):
+                normalized_message = " ".join(message.split())[:512]
+                if normalized_message:
+                    detail = f": {normalized_message}"
+        raise RuntimeError(f"GitHub API request failed with HTTP {exc.code}{detail}") from exc
     except URLError as exc:
         raise RuntimeError("GitHub API request failed") from exc
 

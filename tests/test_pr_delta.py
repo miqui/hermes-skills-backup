@@ -1,11 +1,16 @@
 """Tests for concise, idempotent snapshot-delta PR reporting."""
 from __future__ import annotations
 
+from io import BytesIO
 import shutil
 from pathlib import Path
+from urllib.error import HTTPError
+
+import pytest
 
 from hermes_skills_backup.pr_delta import (
     COMMENT_MARKER,
+    _github_request,
     build_delta_comment,
     upsert_pull_request_comment,
 )
@@ -32,6 +37,25 @@ def _snapshot_pair(hermes_home: Path, tmp_path: Path) -> tuple[Path, Path, Path]
 
     current = create_snapshot(hermes_home, snapshots_dir, snapshot_id="20260726T010000Z-22222222")
     return snapshots_dir, base, current
+
+
+def test_github_request_reports_safe_github_error_message(monkeypatch: pytest.MonkeyPatch) -> None:
+    def denied_urlopen(_request: object, timeout: int) -> object:
+        raise HTTPError(
+            url="https://api.github.example/repos/owner/repo/issues/9/comments",
+            code=403,
+            msg="Forbidden",
+            hdrs=None,
+            fp=BytesIO(b'{"message":"Resource not accessible by integration"}'),
+        )
+
+    monkeypatch.setattr("hermes_skills_backup.pr_delta.urlopen", denied_urlopen)
+
+    with pytest.raises(
+        RuntimeError,
+        match="GitHub API request failed with HTTP 403: Resource not accessible by integration",
+    ):
+        _github_request("POST", "https://api.github.example/repos/owner/repo/issues/9/comments", "test-token", {"body": "test"})
 
 
 def test_delta_comment_lists_only_changed_skills(hermes_home: Path, tmp_path: Path) -> None:
