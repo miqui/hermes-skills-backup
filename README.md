@@ -29,6 +29,7 @@ This provides five console scripts: `hsb-snapshot`, `hsb-validate`,
 snapshots/<snapshot-id>/
   MANIFEST.json
   RESTORE.md
+  skills-corpus.json         <- generated from the copied default profile
   profiles/
     default/skills/          <- from <hermes-home>/skills
     <profile-name>/skills/   <- from <hermes-home>/profiles/<profile-name>/skills
@@ -40,6 +41,18 @@ profiles a given host has. A host with no named profiles produces a snapshot
 containing only the `default` profile; hosts with additional profiles under
 `~/.hermes/profiles/<name>/skills` get one `profiles/<name>/skills` tree per
 profile.
+
+`skills-corpus.json` is a generated, D3-compatible corpus document (schema:
+`generatedAt`, `sourceRoot`, `stats`, `skills`, `tree`) built once, at
+snapshot-creation time, from the **already-copied** `default` profile inside
+that same snapshot — never from a later re-read of the live source tree, and
+never fabricating metadata a skill doesn't provide (missing `author`,
+`version`, `tags`, etc. are simply empty). It is listed in `MANIFEST.json`
+under `root_artifacts` and is hash-verified by `hsb-verify`/`hsb-validate`
+exactly like every profile file — a tampered, missing, or untracked
+`skills-corpus.json` fails verification, it is never silently exempted.
+Only the `default` profile is summarized; named profiles are out of scope
+for this artifact.
 
 Hidden/internal top-level entries under each skills directory (e.g.
 `.curator_backups`, `.hub`, `.usage.json`) are excluded — these are Hermes
@@ -63,7 +76,7 @@ flagged content is a documentation placeholder, not a live credential).
 
 `hsb-verify` checks manifest schema/types, snapshot id format, SHA-256 of
 every file, and exact manifest/on-disk correspondence (no missing or extra
-files).
+files) — including the generated `skills-corpus.json` root artifact.
 
 ```bash
 hsb-verify --snapshots-dir snapshots --snapshot-id <id>
@@ -136,7 +149,9 @@ values rather than users running it manually.
 
 Tests cover multi-profile capture, top-level exclusions, invalid YAML
 frontmatter, tampered/mismatched manifests, dry-run vs. applied restores,
-and path-traversal / symlink safety.
+path-traversal / symlink safety, and the generated `skills-corpus.json`
+artifact (D3-schema shape, derivation from the staged copy, tampering /
+missing-artifact detection, and empty-default-profile behavior).
 
 ## License
 

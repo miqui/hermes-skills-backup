@@ -19,6 +19,7 @@ out-of-scope Hermes state is ever touched, since only skills/ trees are read.
 from __future__ import annotations
 
 import argparse
+import json
 import shutil
 import sys
 from pathlib import Path
@@ -28,6 +29,7 @@ from hermes_skills_backup.common import (
     compute_profile_files,
     default_hermes_home,
     discover_profiles,
+    file_sha256,
     find_symlinks,
     iter_included_files,
     new_snapshot_id,
@@ -38,9 +40,13 @@ from hermes_skills_backup.common import (
     write_manifest,
     write_restore_md,
     assemble_manifest,
+    CORPUS_FILENAME,
+    DEFAULT_PROFILE,
     MANIFEST_FILENAME,
+    PROFILES_DIRNAME,
     RESTORE_FILENAME,
 )
+from hermes_skills_backup.corpus import build_corpus
 
 
 def create_snapshot(
@@ -98,7 +104,23 @@ def create_snapshot(
                 shutil.copy2(f, target)
             profile_manifest_files[name] = compute_profile_files(root)
 
-        manifest = assemble_manifest(profile_manifest_files, snapshot_id, utc_now_iso())
+        # Build the D3 skills-corpus.json artifact from the *staged copy* of
+        # the default profile — never the live source — so the corpus can
+        # never drift from what this snapshot actually contains, and a later
+        # mutation of the live skills tree can never change it retroactively.
+        root_artifacts: "dict[str, dict]" = {}
+        if DEFAULT_PROFILE in profiles:
+            default_staged_dir = snapshot_profile_skills_dir(staging_root, DEFAULT_PROFILE)
+            source_root_label = f"{PROFILES_DIRNAME}/{DEFAULT_PROFILE}/skills"
+            corpus = build_corpus(default_staged_dir, source_root_label, utc_now_iso())
+            corpus_path = staging_root / CORPUS_FILENAME
+            corpus_path.write_text(json.dumps(corpus, indent=2, sort_keys=True, ensure_ascii=False) + "\n")
+            root_artifacts[CORPUS_FILENAME] = {
+                "sha256": file_sha256(corpus_path),
+                "size_bytes": corpus_path.stat().st_size,
+            }
+
+        manifest = assemble_manifest(profile_manifest_files, snapshot_id, utc_now_iso(), root_artifacts)
         write_manifest(manifest, staging_root / MANIFEST_FILENAME)
         write_restore_md(manifest, staging_root / RESTORE_FILENAME)
 
