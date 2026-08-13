@@ -15,6 +15,7 @@ from pathlib import Path
 from typing import List, Optional, Tuple
 
 from hermes_skills_backup.common import (
+    CORPUS_FILENAME,
     DEFAULT_PROFILE,
     FORBIDDEN_STATE_DIRNAMES,
     FORBIDDEN_STATE_FILENAMES,
@@ -142,6 +143,28 @@ def load_and_check_manifest_schema(
             if not isinstance(size, int) or isinstance(size, bool) or size < 0:
                 issues.append(Issue("error", "schema", floc, f"invalid size_bytes: {size!r}"))
 
+    # root_artifacts (e.g. skills-corpus.json) is optional for backward
+    # compatibility with pre-existing manifests, but when present every
+    # entry must be well-formed and is subject to the same integrity model
+    # as profile files — it is never silently exempted.
+    root_artifacts = manifest.get("root_artifacts", {})
+    if root_artifacts is not None and not isinstance(root_artifacts, dict):
+        issues.append(Issue("error", "schema", str(manifest_path), "root_artifacts must be an object"))
+    elif isinstance(root_artifacts, dict):
+        for filename, meta in root_artifacts.items():
+            floc = f"{manifest_path}#root_artifacts[{filename!r}]"
+            if filename in (MANIFEST_FILENAME,):
+                issues.append(Issue("error", "schema", floc, "root_artifacts must not list MANIFEST.json itself"))
+            if not isinstance(meta, dict):
+                issues.append(Issue("error", "schema", floc, "root artifact entry must be an object"))
+                continue
+            sha = meta.get("sha256")
+            if not isinstance(sha, str) or not SHA256_RE.match(sha):
+                issues.append(Issue("error", "schema", floc, f"invalid sha256: {sha!r}"))
+            size = meta.get("size_bytes")
+            if not isinstance(size, int) or isinstance(size, bool) or size < 0:
+                issues.append(Issue("error", "schema", floc, f"invalid size_bytes: {size!r}"))
+
     return manifest, issues
 
 
@@ -252,7 +275,55 @@ def verify_snapshot(snapshot_dir: Path) -> Tuple[Optional[dict], List[Issue]]:
     issues += check_snapshot_id(snapshot_dir, manifest)
     issues += check_profiles_on_disk(snapshot_dir, manifest)
     issues += check_file_correspondence(snapshot_dir, manifest)
+    issues += check_root_artifacts(snapshot_dir, manifest)
     return manifest, issues
+
+
+# ---------------------------------------------------------------------------
+# Root artifact (skills-corpus.json) integrity — exact on-disk
+# correspondence and hash verification, same model as profile files.
+# ---------------------------------------------------------------------------
+
+def check_root_artifacts(snapshot_dir: Path, manifest: dict) -> List[Issue]:
+    issues: List[Issue] = []
+    root_artifacts = manifest.get("root_artifacts") or {}
+    if not isinstance(root_artifacts, dict):
+        return issues  # already reported by schema check
+
+    for filename, meta in root_artifacts.items():
+        try:
+            full = safe_relpath_join(snapshot_dir, filename)
+        except PathSafetyError as exc:
+            issues.append(Issue("error", "path_escape", f"root:{filename}", str(exc)))
+            continue
+
+        if full.is_symlink():
+            issues.append(Issue("error", "unsafe_symlink", str(full), "manifest entry resolves to a symlink"))
+            continue
+        if not full.exists():
+            issues.append(Issue("error", "missing_file", str(full), "listed in manifest root_artifacts but missing on disk"))
+            continue
+        if not full.is_file():
+            issues.append(Issue("error", "missing_file", str(full), "root_artifacts entry is not a regular file"))
+            continue
+
+        expected_sha = meta.get("sha256") if isinstance(meta, dict) else None
+        actual_sha = file_sha256(full)
+        if expected_sha and actual_sha != expected_sha:
+            issues.append(Issue("error", "hash_mismatch", str(full), f"expected sha256 {expected_sha}, got {actual_sha}"))
+
+        expected_size = meta.get("size_bytes") if isinstance(meta, dict) else None
+        actual_size = full.stat().st_size
+        if isinstance(expected_size, int) and actual_size != expected_size:
+            issues.append(Issue("error", "hash_mismatch", str(full), f"expected size {expected_size}, got {actual_size}"))
+
+    # Detect a skills-corpus.json present on disk but not listed in the
+    # manifest — it must never be silently exempted from verification.
+    corpus_path = snapshot_dir / CORPUS_FILENAME
+    if corpus_path.is_file() and CORPUS_FILENAME not in root_artifacts:
+        issues.append(Issue("error", "extra_file", str(corpus_path), "present on disk but not listed in manifest root_artifacts"))
+
+    return issues
 
 
 # ---------------------------------------------------------------------------

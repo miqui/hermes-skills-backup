@@ -33,6 +33,7 @@ from hermes_skills_backup import __version__
 # ---------------------------------------------------------------------------
 MANIFEST_FILENAME = "MANIFEST.json"
 RESTORE_FILENAME = "RESTORE.md"
+CORPUS_FILENAME = "skills-corpus.json"
 PROFILES_DIRNAME = "profiles"
 SKILLS_DIRNAME = "skills"
 DEFAULT_PROFILE = "default"
@@ -426,9 +427,13 @@ def assemble_manifest(
     profile_files: "dict[str, dict]",
     snapshot_id: str,
     created_utc: str,
+    root_artifacts: "dict[str, dict]" = None,
 ) -> dict:
     """
     profile_files: {profile_name: {rel: {"sha256":..., "size_bytes":...}}}
+    root_artifacts: {filename: {"sha256":..., "size_bytes":...}} for generated
+        files that live at the snapshot root alongside MANIFEST.json/RESTORE.md
+        (currently: skills-corpus.json). Optional/empty for older callers.
     Builds the full MANIFEST.json document. Never records hostnames,
     absolute source paths, OS details, or credentials.
     """
@@ -446,6 +451,7 @@ def assemble_manifest(
         "created_utc": created_utc,
         "generator": {"name": GENERATOR_NAME, "version": __version__},
         "profiles": profiles,
+        "root_artifacts": dict(sorted((root_artifacts or {}).items())),
     }
 
 

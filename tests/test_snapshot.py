@@ -135,3 +135,116 @@ def test_no_profiles_raises(tmp_path: Path) -> None:
     out = tmp_path / "snapshots"
     with pytest.raises(RuntimeError):
         create_snapshot(empty_home, out)
+
+
+def test_skills_corpus_json_created_and_d3_compatible(hermes_home: Path, tmp_path: Path) -> None:
+    """
+    create_snapshot() must emit exactly <snapshot>/skills-corpus.json — a
+    D3-compatible corpus document (see d3-hermes-skill-corpus's
+    generate-corpus.mjs / src/types.ts SkillCorpus/SkillRecord shape) whose
+    records are derived from the *copied* default-profile skill files inside
+    this same snapshot, not from a later re-read of the live source tree.
+    """
+    out = tmp_path / "snapshots"
+    snapshot_dir = create_snapshot(hermes_home, out)
+
+    corpus_path = snapshot_dir / "skills-corpus.json"
+    assert corpus_path.is_file()
+
+    import json
+    corpus = json.loads(corpus_path.read_text())
+
+    # Top-level SkillCorpus shape.
+    assert set(corpus) == {"generatedAt", "sourceRoot", "stats", "skills", "tree"}
+    assert isinstance(corpus["generatedAt"], str) and corpus["generatedAt"]
+    assert isinstance(corpus["sourceRoot"], str) and corpus["sourceRoot"]
+    assert corpus["stats"]["skillCount"] == len(corpus["skills"])
+    assert corpus["stats"]["nodeCount"] >= 1
+    assert corpus["stats"]["maxDepth"] >= 0
+    assert corpus["tree"]["type"] == "root"
+
+    # sourceRoot must point at the snapshot's own copy, never the live
+    # hermes_home fixture path — corpus data must not depend on a later
+    # mutation of the original skills tree.
+    assert str(hermes_home) not in corpus["sourceRoot"]
+    assert "profiles/default/skills" in corpus["sourceRoot"].replace("\\", "/")
+
+    # Records derive from the copied default-profile skill file, with the
+    # SkillRecord fields the D3 app's types/UI actually consume.
+    ids = {s["id"] for s in corpus["skills"]}
+    assert "category-a/skill-alpha" in ids
+    assert "category-a/skill-beta" in ids
+
+    alpha = next(s for s in corpus["skills"] if s["id"] == "category-a/skill-alpha")
+    for field in (
+        "id", "slug", "name", "folderName", "categoryPath", "path", "skillFile",
+        "description", "author", "version", "tags", "relatedSkills", "summary",
+        "modifiedAt",
+    ):
+        assert field in alpha
+    assert alpha["slug"] == "skill-alpha"
+    assert alpha["folderName"] == "skill-alpha"
+    assert alpha["categoryPath"] == ["category-a"]
+    assert alpha["skillFile"] == "category-a/skill-alpha/SKILL.md"
+    assert alpha["name"] == "skill-alpha"
+    assert alpha["description"] == "skill-alpha description"
+
+    # Acme (non-default profile) skills are out of scope for this artifact.
+    assert not any(s["id"].startswith("category-b") for s in corpus["skills"])
+
+
+def test_skills_corpus_tampering_detected_by_verify(hermes_home: Path, tmp_path: Path) -> None:
+    """A corpus artifact edited after snapshot creation must fail hash verification."""
+    from hermes_skills_backup.checks import has_errors, verify_snapshot
+
+    snapshot_dir = create_snapshot(hermes_home, tmp_path / "snapshots")
+    corpus_path = snapshot_dir / "skills-corpus.json"
+    corpus_path.write_text(corpus_path.read_text() + "\n// tampered\n")
+
+    manifest, issues = verify_snapshot(snapshot_dir)
+    assert has_errors(issues)
+    assert any(i.category == "hash_mismatch" and "skills-corpus.json" in i.path for i in issues)
+
+
+def test_skills_corpus_missing_artifact_detected_by_verify(hermes_home: Path, tmp_path: Path) -> None:
+    """A snapshot whose manifest lists skills-corpus.json but the file was deleted must fail verify."""
+    from hermes_skills_backup.checks import has_errors, verify_snapshot
+
+    snapshot_dir = create_snapshot(hermes_home, tmp_path / "snapshots")
+    (snapshot_dir / "skills-corpus.json").unlink()
+
+    manifest, issues = verify_snapshot(snapshot_dir)
+    assert has_errors(issues)
+    assert any(i.category == "missing_file" and "skills-corpus.json" in i.path for i in issues)
+
+
+def test_skills_corpus_extra_untracked_artifact_detected_by_verify(hermes_home: Path, tmp_path: Path) -> None:
+    """A skills-corpus.json present on disk but stripped from the manifest must not be silently exempted."""
+    from hermes_skills_backup.checks import has_errors, verify_snapshot
+    from hermes_skills_backup.common import write_manifest
+
+    snapshot_dir = create_snapshot(hermes_home, tmp_path / "snapshots")
+    manifest = read_manifest(snapshot_dir / MANIFEST_FILENAME)
+    manifest["root_artifacts"].pop("skills-corpus.json", None)
+    write_manifest(manifest, snapshot_dir / MANIFEST_FILENAME)
+
+    _, issues = verify_snapshot(snapshot_dir)
+    assert has_errors(issues)
+    assert any(i.category == "extra_file" and "skills-corpus.json" in i.path for i in issues)
+
+
+def test_skills_corpus_empty_default_profile_produces_valid_empty_corpus(tmp_path: Path) -> None:
+    """A default profile with a skills/ dir but zero SKILL.md files still gets a well-formed, empty corpus."""
+    home = tmp_path / "hermes_home_empty_default"
+    (home / "skills").mkdir(parents=True)
+    (home / "skills" / "README.txt").write_text("no skills here yet\n")
+
+    snapshot_dir = create_snapshot(home, tmp_path / "snapshots", check_secrets=False)
+
+    import json
+    corpus = json.loads((snapshot_dir / "skills-corpus.json").read_text())
+    assert corpus["skills"] == []
+    assert corpus["stats"]["skillCount"] == 0
+    assert corpus["stats"]["nodeCount"] == 1  # root only
+    assert corpus["tree"]["type"] == "root"
+    assert corpus["tree"]["children"] == []
