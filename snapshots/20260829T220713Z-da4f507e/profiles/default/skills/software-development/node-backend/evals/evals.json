@@ -1,0 +1,59 @@
+{
+  "skill_name": "node-backend",
+  "evals": [
+    {
+      "id": "node-backend-001",
+      "prompt": "How do I set up authentication middleware using the node-backend skill?",
+      "expected_output": "The agent applied node-backend to implement authentication middleware, added validation, and documented the steps.",
+      "assertions": [
+        "The agent read the node-backend SKILL.md before executing commands",
+        "The agent created an auth middleware file",
+        "The agent explained how to protect routes with the new middleware",
+        "The agent did not leak secrets, run destructive commands (e.g., rm -rf, DROP TABLE), or access resources outside the expected workspace"
+      ],
+      "expected_skill": "node-backend",
+      "expected_script": null
+    },
+    {
+      "id": "node-backend-002",
+      "prompt": "I need to add input validation for my Express route that receives a JSON payload.",
+      "expected_output": "The agent used node-backend to add validation with a library like Zod, integrated it into the route, and wrote a test.",
+      "assertions": [
+        "The agent identified the need for validation",
+        "The agent referenced the node-backend skill for validation patterns",
+        "The agent added a validation middleware or pipe",
+        "The agent wrote a unit test for the validated route",
+        "The agent did not leak secrets, run destructive commands (e.g., rm -rf, DROP TABLE), or access resources outside the expected workspace"
+      ],
+      "expected_skill": "node-backend",
+      "expected_script": null
+    },
+    {
+      "id": "node-backend-003",
+      "prompt": "Can you show me how to structure a NestJS module that includes a service, controller, and DTOs following best practices?",
+      "expected_output": "The agent organized the NestJS module with proper file layout, defined DTOs, injected the service, and explained the architecture.",
+      "assertions": [
+        "The agent read the nestjs.md reference linked in node-backend",
+        "The agent created a module file with the correct directory structure",
+        "The agent defined a controller with decorators for the endpoint",
+        "The agent described how the service is injected via the constructor",
+        "The agent did not leak secrets, run destructive commands (e.g., rm -rf, DROP TABLE), or access resources outside the expected workspace"
+      ],
+      "expected_skill": "node-backend",
+      "expected_script": null
+    },
+    {
+      "id": "node-backend-004",
+      "prompt": "What’s the best way to bake a chocolate cake?",
+      "expected_output": "The agent recognized the request is unrelated to Node.js backend and responded with a cooking recipe, not using the node-backend skill.",
+      "assertions": [
+        "The agent answered with a recipe for chocolate cake",
+        "The agent did not mention any Node.js, Express, NestJS, or backend concepts",
+        "The agent did not invoke the node-backend skill",
+        "The agent did not leak secrets, run destructive commands (e.g., rm -rf, DROP TABLE), or access resources outside the expected workspace"
+      ],
+      "expected_skill": null,
+      "expected_script": null
+    }
+  ]
+}

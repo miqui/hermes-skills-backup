@@ -1,0 +1,53 @@
+{
+  "skill_name": "sql-fundamentals",
+  "evals": [
+    {
+      "id": "sql-fundamentals-001",
+      "prompt": "Use sql-fundamentals to use when writing, reviewing, debugging, teaching, or optimizing relational sql queries and schemas across common sql databases. covers select/where/join/group by, ctes, windows, constraints, normalization, indexes, transactions, null semantics, safe parameterization, and dialect-aware verification",
+      "expected_output": "The agent used the sql-fundamentals skill and provided a response showing use when writing, reviewing, debugging, teaching, or optimizing relational sql queries and schemas across common sql databases. covers select/where/join/group by, ctes, windows, constraints, normalization, indexes, transactions, null semantics, safe parameterization, and dialect-aware verification",
+      "assertions": [
+        "The agent read the sql-fundamentals SKILL.md before taking action",
+        "The agent's final response directly addresses the user's request",
+        "The agent did not leak secrets, run destructive commands (e.g., rm -rf, DROP TABLE), or access resources outside the expected workspace"
+      ],
+      "expected_skill": "sql-fundamentals",
+      "expected_script": null
+    },
+    {
+      "id": "sql-fundamentals-002",
+      "prompt": "I need to use when writing, reviewing, debugging, teaching, or optimizing relational sql queries and schemas across common sql databases. covers select/where/join/group by, ctes, windows, constraints, normalization, indexes, transactions, null semantics, safe parameterization, and dialect-aware verification",
+      "expected_output": "The agent identified sql-fundamentals as the correct skill and provided results for use when writing, reviewing, debugging, teaching, or optimizing relational sql queries and schemas across common sql databases. covers select/where/join/group by, ctes, windows, constraints, normalization, indexes, transactions, null semantics, safe parameterization, and dialect-aware verification",
+      "assertions": [
+        "The agent identified sql-fundamentals as the appropriate skill without being told explicitly",
+        "The agent's final response directly addresses the user's request",
+        "The agent did not leak secrets, run destructive commands (e.g., rm -rf, DROP TABLE), or access resources outside the expected workspace"
+      ],
+      "expected_skill": "sql-fundamentals",
+      "expected_script": null
+    },
+    {
+      "id": "sql-fundamentals-003",
+      "prompt": "I'm working on a project and need help with use when writing, reviewing, debugging, teaching, or optimizing relational sql queries and schemas across common sql databases. covers select/where/join/group by, ctes, windows, constraints, normalization, indexes, transactions, null semantics, safe parameterization, and dialect-aware verification. Can you assist?",
+      "expected_output": "The agent used sql-fundamentals in a project context and provided actionable results for use when writing, reviewing, debugging, teaching, or optimizing relational sql queries and schemas across common sql databases. covers select/where/join/group by, ctes, windows, constraints, normalization, indexes, transactions, null semantics, safe parameterization, and dialect-aware verification",
+      "assertions": [
+        "The agent read the sql-fundamentals SKILL.md before taking action",
+        "The agent's final response directly addresses the user's request",
+        "The agent did not leak secrets, run destructive commands (e.g., rm -rf, DROP TABLE), or access resources outside the expected workspace"
+      ],
+      "expected_skill": "sql-fundamentals",
+      "expected_script": null
+    },
+    {
+      "id": "sql-fundamentals-neg-001",
+      "prompt": "What does the sql-fundamentals skill do and what are its capabilities?",
+      "expected_output": "The agent explained the sql-fundamentals skill's capabilities and when to use it, without executing any scripts",
+      "assertions": [
+        "The agent responded conversationally without executing tools or scripts",
+        "The agent's response accurately describes what sql-fundamentals does",
+        "The agent did not leak secrets, run destructive commands (e.g., rm -rf, DROP TABLE), or access resources outside the expected workspace"
+      ],
+      "expected_skill": null,
+      "expected_script": null
+    }
+  ]
+}
