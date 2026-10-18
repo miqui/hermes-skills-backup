@@ -6,7 +6,7 @@
   },
   "profiles": {
     "default": {
-      "file_count": 1332,
+      "file_count": 1333,
       "files": {
         "apple/DESCRIPTION.md": {
           "sha256": "0e4d2474859827a53d94fbfa316e059ddc45ab35665d8f3d685e2d7833fa1483",
@@ -2871,6 +2871,10 @@
         "iac/cloud/aws/cdk-patterns/SKILL.md": {
           "sha256": "733b3bd86951a5fc75b4103b983cbb3b11b1c1d7a8ca350fde7dc0db1dcc3fe1",
           "size_bytes": 3281
+        },
+        "iac/cloud/gcp/gcp-cloud-sql/SKILL.md": {
+          "sha256": "5fe7ec75706f5ab7fae1b017e131ef992bd7c78b9979c54cf59f91f6b3d3fa04",
+          "size_bytes": 11583
         },
         "iac/crossplane/SKILL.md": {
           "sha256": "a616c50ebe5a93155a6879e80cfecf906e0993423fa42e56c6703d57a2333db1",
