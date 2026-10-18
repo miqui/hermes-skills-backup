@@ -5838,10 +5838,10 @@
       "categoryPath": [
         "software-development"
       ],
-      "description": "Use when building, testing, reviewing, or debugging Hono applications, including Hono routing, middleware, request validation, JSX, streaming, WebSockets, typed RPC clients, and runtime adapters.",
+      "description": "Use when building, testing, reviewing, or debugging Hono applications, including Hono routing, middleware, request validation, JSX, streaming, WebSockets, typed RPC clients, runtime adapters, and v4-to-v5 migration.",
       "folderName": "hono",
       "id": "software-development/hono",
-      "modifiedAt": "2026-08-22T19:00:06.381Z",
+      "modifiedAt": "2026-10-18T15:41:18.105Z",
       "name": "hono",
       "path": "software-development/hono",
       "relatedSkills": [],
