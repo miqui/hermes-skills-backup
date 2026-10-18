@@ -1,12 +1,12 @@
 {
-  "created_utc": "2026-10-18T19:12:10Z",
+  "created_utc": "2026-10-18T19:12:17Z",
   "generator": {
     "name": "hermes-skills-backup",
     "version": "0.2.0"
   },
   "profiles": {
     "default": {
-      "file_count": 1341,
+      "file_count": 1342,
       "files": {
         "apple/DESCRIPTION.md": {
           "sha256": "0e4d2474859827a53d94fbfa316e059ddc45ab35665d8f3d685e2d7833fa1483",
@@ -2908,6 +2908,10 @@
           "sha256": "551840ff7190f4ae88de7a6579048aa60de5db181fc534840996a61ad807c16b",
           "size_bytes": 10130
         },
+        "iac/cloud/gcp/gcp-storage-secrets-bigquery/SKILL.md": {
+          "sha256": "ed538c646dc7b7267a8298079bc65c50575484d840aea3f601a1e48aaa17acc7",
+          "size_bytes": 10026
+        },
         "iac/crossplane/SKILL.md": {
           "sha256": "a616c50ebe5a93155a6879e80cfecf906e0993423fa42e56c6703d57a2333db1",
           "size_bytes": 16048
@@ -5378,8 +5382,8 @@
   },
   "root_artifacts": {
     "skills-corpus.json": {
-      "sha256": "bab75e84fbae3571e6ebeb818e5c8d2542f4341c37101efa036e1978efa2d286",
-      "size_bytes": 500212
+      "sha256": "6c92fb975e4bda220231e1b6a54768b984165c1ec26d8e78003840841e35b1ed",
+      "size_bytes": 502478
     }
   },
   "schema_version": 1,
