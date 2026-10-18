@@ -3145,6 +3145,39 @@
     {
       "author": "Hermes Agent",
       "categoryPath": [
+        "iac",
+        "cloud",
+        "gcp"
+      ],
+      "description": "Use when deploying or hardening GCP Cloud Run services/jobs, Compute Engine VMs, or Artifact Registry. Gives gcloud and Terraform (google provider) baselines.",
+      "folderName": "gcp-cloud-run-compute",
+      "id": "iac/cloud/gcp/gcp-cloud-run-compute",
+      "modifiedAt": "2026-10-18T18:52:31.562Z",
+      "name": "gcp-cloud-run-compute",
+      "path": "iac/cloud/gcp/gcp-cloud-run-compute",
+      "relatedSkills": [
+        "terraform-infrastructure",
+        "cloud-architect",
+        "terraform-skill"
+      ],
+      "skillFile": "iac/cloud/gcp/gcp-cloud-run-compute/SKILL.md",
+      "slug": "gcp-cloud-run-compute",
+      "summary": "GCP Cloud Run, Compute Engine, Artifact Registry Overview Secure by default baselines for container and VM compute on Google Cloud, each shown with gcloud and Terraform ( hashicorp/google provider). Flags marked (unverif",
+      "tags": [
+        "gcp",
+        "iac",
+        "cloud-run",
+        "compute-engine",
+        "artifact-registry",
+        "terraform",
+        "gcloud",
+        "security"
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "author": "Hermes Agent",
+      "categoryPath": [
         "iac"
       ],
       "description": "Use when designing, reviewing, or troubleshooting Crossplane-based infrastructure APIs on Kubernetes, including provider packages, managed resources, XRDs, compositions, claims, composition functions, and production operating patterns for self-service cloud provisioning.",
@@ -6823,8 +6856,8 @@
   "sourceRoot": "profiles/default/skills",
   "stats": {
     "maxDepth": 4,
-    "nodeCount": 281,
-    "skillCount": 248
+    "nodeCount": 283,
+    "skillCount": 249
   },
   "tree": {
     "children": [
@@ -9059,6 +9092,37 @@
                 "id": "group:iac/cloud/aws",
                 "name": "aws",
                 "path": "iac/cloud/aws",
+                "type": "group"
+              },
+              {
+                "children": [
+                  {
+                    "description": "Use when deploying or hardening GCP Cloud Run services/jobs, Compute Engine VMs, or Artifact Registry. Gives gcloud and Terraform (google provider) baselines.",
+                    "id": "skill:iac/cloud/gcp/gcp-cloud-run-compute",
+                    "name": "gcp-cloud-run-compute",
+                    "path": "iac/cloud/gcp/gcp-cloud-run-compute",
+                    "relatedSkills": [
+                      "terraform-infrastructure",
+                      "cloud-architect",
+                      "terraform-skill"
+                    ],
+                    "skillId": "iac/cloud/gcp/gcp-cloud-run-compute",
+                    "tags": [
+                      "gcp",
+                      "iac",
+                      "cloud-run",
+                      "compute-engine",
+                      "artifact-registry",
+                      "terraform",
+                      "gcloud",
+                      "security"
+                    ],
+                    "type": "skill"
+                  }
+                ],
+                "id": "group:iac/cloud/gcp",
+                "name": "gcp",
+                "path": "iac/cloud/gcp",
                 "type": "group"
               }
             ],

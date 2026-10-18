@@ -6,7 +6,7 @@
   },
   "profiles": {
     "default": {
-      "file_count": 1332,
+      "file_count": 1333,
       "files": {
         "apple/DESCRIPTION.md": {
           "sha256": "0e4d2474859827a53d94fbfa316e059ddc45ab35665d8f3d685e2d7833fa1483",
@@ -2872,6 +2872,10 @@
           "sha256": "733b3bd86951a5fc75b4103b983cbb3b11b1c1d7a8ca350fde7dc0db1dcc3fe1",
           "size_bytes": 3281
         },
+        "iac/cloud/gcp/gcp-cloud-run-compute/SKILL.md": {
+          "sha256": "5a613a5917893541e826c3444bd6addff2218dea54a2ec52ef7c9f97da9d46f3",
+          "size_bytes": 8393
+        },
         "iac/crossplane/SKILL.md": {
           "sha256": "a616c50ebe5a93155a6879e80cfecf906e0993423fa42e56c6703d57a2333db1",
           "size_bytes": 16048
@@ -5342,8 +5346,8 @@
   },
   "root_artifacts": {
     "skills-corpus.json": {
-      "sha256": "7a2158ee371e35d30fd0835d67c488a3d4d308bf060960973a616cd3fbf61ec0",
-      "size_bytes": 483674
+      "sha256": "c3e44e141ed61c5a8bad1853de46a3dae199c9024f27472dbd858c364e82da48",
+      "size_bytes": 486188
     }
   },
   "schema_version": 1,
