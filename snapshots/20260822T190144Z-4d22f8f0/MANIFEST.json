@@ -6,7 +6,7 @@
   },
   "profiles": {
     "default": {
-      "file_count": 1322,
+      "file_count": 1330,
       "files": {
         "apple/DESCRIPTION.md": {
           "sha256": "0e4d2474859827a53d94fbfa316e059ddc45ab35665d8f3d685e2d7833fa1483",
@@ -4745,8 +4745,40 @@
           "size_bytes": 11474
         },
         "software-development/hono/SKILL.md": {
-          "sha256": "06bbace7876f2a49695c3e0327397c1521d10bc6622c778aa93557ff738fc6c3",
-          "size_bytes": 11447
+          "sha256": "97dcfe1911e17201c7deeb757b5ea5050b372ecf291f09cca560a63c25dbb95a",
+          "size_bytes": 19870
+        },
+        "software-development/hono/references/helpers.md": {
+          "sha256": "8e0024c56954d4a6e32bb7bb00bc3946842c69f677f1c25c71b599df4a99f6c9",
+          "size_bytes": 3505
+        },
+        "software-development/hono/references/jsx.md": {
+          "sha256": "13bb5238055c21c0cbc9bbd1dfe012f20b5a3aa886815b87a331fa36c7c49d4f",
+          "size_bytes": 1879
+        },
+        "software-development/hono/references/middleware-catalog.md": {
+          "sha256": "92d46ebec27d4595b99f861d47489f50f4eafd7a9ad2c20184f4963dc1eb9ebf",
+          "size_bytes": 3648
+        },
+        "software-development/hono/references/openapi-zod.md": {
+          "sha256": "1fa3c5beee30b8b54d09175a7cf511edfac91edf718ddf6b91709d6f4d4c4f63",
+          "size_bytes": 1610
+        },
+        "software-development/hono/references/routers-presets.md": {
+          "sha256": "36395b4143e05fb8e9152a1176d53cea95197ede1fb776dce2f83880c2b5b373",
+          "size_bytes": 1693
+        },
+        "software-development/hono/references/rpc.md": {
+          "sha256": "2d201cc355340ea4cadd03ff0d9ae5f30ea21699627ad14cc09b6bf6585bdf4c",
+          "size_bytes": 1921
+        },
+        "software-development/hono/references/runtimes.md": {
+          "sha256": "010673a86760d357b4967d51dbdf6805b2518335ccf2002d15232a1fd2de7ca3",
+          "size_bytes": 5702
+        },
+        "software-development/hono/references/v5-migration.md": {
+          "sha256": "2c7fc9b03a6437e62ae5bb12fb7d52bbcde7ee8b542cdca811e53d7c6a7df56a",
+          "size_bytes": 3771
         },
         "software-development/idea-refine/SKILL.md": {
           "sha256": "59673159ae0d69d11178c81616029cb0b98dc7c1f0b40bbd8abe1f18e768789a",
@@ -5302,8 +5334,8 @@
   },
   "root_artifacts": {
     "skills-corpus.json": {
-      "sha256": "a65518a35e0f7065930b22ab403b18a6f159c403962dc43430a922e6a26ecaf9",
-      "size_bytes": 482668
+      "sha256": "f00dd1d663d49fcdfed5e174ddf6f8986c78a831a3157b5c2ed91ef1f42d5f38",
+      "size_bytes": 482688
     }
   },
   "schema_version": 1,
