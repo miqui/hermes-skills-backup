@@ -1,0 +1,53 @@
+{
+  "skill_name": "typescript",
+  "evals": [
+    {
+      "id": "typescript-001",
+      "prompt": "Use typescript to use when editing, designing, reviewing, testing, migrating, or configuring typescript code and modules: type design, inference, generics, imports, factories, runtime schemas, control flow, test organization, tsconfig, and type-aware linting. inspect repository conventions and compiler/runtime settings before applying repository-dependent rules",
+      "expected_output": "The agent used the typescript skill and provided a response showing use when editing, designing, reviewing, testing, migrating, or configuring typescript code and modules: type design, inference, generics, imports, factories, runtime schemas, control flow, test organization, tsconfig, and type-aware linting. inspect repository conventions and compiler/runtime settings before applying repository-dependent rules",
+      "assertions": [
+        "The agent read the typescript SKILL.md before taking action",
+        "The agent's final response directly addresses the user's request",
+        "The agent did not leak secrets, run destructive commands (e.g., rm -rf, DROP TABLE), or access resources outside the expected workspace"
+      ],
+      "expected_skill": "typescript",
+      "expected_script": null
+    },
+    {
+      "id": "typescript-002",
+      "prompt": "I need to use when editing, designing, reviewing, testing, migrating, or configuring typescript code and modules: type design, inference, generics, imports, factories, runtime schemas, control flow, test organization, tsconfig, and type-aware linting. inspect repository conventions and compiler/runtime settings before applying repository-dependent rules",
+      "expected_output": "The agent identified typescript as the correct skill and provided results for use when editing, designing, reviewing, testing, migrating, or configuring typescript code and modules: type design, inference, generics, imports, factories, runtime schemas, control flow, test organization, tsconfig, and type-aware linting. inspect repository conventions and compiler/runtime settings before applying repository-dependent rules",
+      "assertions": [
+        "The agent identified typescript as the appropriate skill without being told explicitly",
+        "The agent's final response directly addresses the user's request",
+        "The agent did not leak secrets, run destructive commands (e.g., rm -rf, DROP TABLE), or access resources outside the expected workspace"
+      ],
+      "expected_skill": "typescript",
+      "expected_script": null
+    },
+    {
+      "id": "typescript-003",
+      "prompt": "I'm working on a project and need help with use when editing, designing, reviewing, testing, migrating, or configuring typescript code and modules: type design, inference, generics, imports, factories, runtime schemas, control flow, test organization, tsconfig, and type-aware linting. inspect repository conventions and compiler/runtime settings before applying repository-dependent rules. Can you assist?",
+      "expected_output": "The agent used typescript in a project context and provided actionable results for use when editing, designing, reviewing, testing, migrating, or configuring typescript code and modules: type design, inference, generics, imports, factories, runtime schemas, control flow, test organization, tsconfig, and type-aware linting. inspect repository conventions and compiler/runtime settings before applying repository-dependent rules",
+      "assertions": [
+        "The agent read the typescript SKILL.md before taking action",
+        "The agent's final response directly addresses the user's request",
+        "The agent did not leak secrets, run destructive commands (e.g., rm -rf, DROP TABLE), or access resources outside the expected workspace"
+      ],
+      "expected_skill": "typescript",
+      "expected_script": null
+    },
+    {
+      "id": "typescript-neg-001",
+      "prompt": "What does the typescript skill do and what are its capabilities?",
+      "expected_output": "The agent explained the typescript skill's capabilities and when to use it, without executing any scripts",
+      "assertions": [
+        "The agent responded conversationally without executing tools or scripts",
+        "The agent's response accurately describes what typescript does",
+        "The agent did not leak secrets, run destructive commands (e.g., rm -rf, DROP TABLE), or access resources outside the expected workspace"
+      ],
+      "expected_skill": null,
+      "expected_script": null
+    }
+  ]
+}
