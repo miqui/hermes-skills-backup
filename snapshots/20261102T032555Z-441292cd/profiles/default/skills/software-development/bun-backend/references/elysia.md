@@ -31,6 +31,27 @@ Prefer BurgerAPI instead when file-based routing and framework-provided scaffold
 - WebSocket: https://elysiajs.com/patterns/websocket.html
 - Deploy to Production: https://elysiajs.com/patterns/deploy.html
 
+## Getting Started
+
+Commands below are taken from the Elysia Quick Start docs and are UNVERIFIED (not run locally).
+
+```bash
+bun create elysia app
+cd app
+bun dev
+```
+
+- `bun create elysia app` scaffolds a new project in `app/`.
+- `bun dev` starts the dev server; open http://localhost:3000, which should greet you with "Hello Elysia".
+- The `dev` script auto-reloads the server on file changes.
+- The docs also describe a manual installation path; the extracted page text did not include its steps, so check the Quick Start page directly if scaffolding is not wanted.
+
+Bun itself must already be installed. Do not copy the remote installer one-liner from the docs; follow `SKILL.md` "Installation and Tooling Safety" (Homebrew-first, ask before running remote installers).
+
+### Runtime support
+
+Elysia is optimized for Bun and the docs say it can also run on Node.js (and other runtimes). Verify the Node.js adapter/compatibility in the target project before relying on it; this skill assumes Bun.
+
 ## Mental Model
 
 Think of Elysia as a Bun-native framework where:

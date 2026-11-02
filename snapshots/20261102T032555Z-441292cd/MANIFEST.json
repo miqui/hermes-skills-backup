@@ -4549,16 +4549,16 @@
           "size_bytes": 2512
         },
         "software-development/bun-backend/SKILL.md": {
-          "sha256": "0ee0ecdcdba57ef6929961d994d5f0b48a2517618b7421fd89c4b05cb6f01123",
-          "size_bytes": 23324
+          "sha256": "b5e6370e6a82d8765e847b0a86d4fb1679c804665d2bf0b6d1b99a49e1d961f9",
+          "size_bytes": 23437
         },
         "software-development/bun-backend/references/burgerapi.md": {
           "sha256": "ce8a3728bc51ac1563c82255e43c0070a44a2ff0cf9982459859a5e7041dbde0",
           "size_bytes": 5237
         },
         "software-development/bun-backend/references/elysia.md": {
-          "sha256": "212a357a5d5623bc28273361797e8d21fc9d1b13c14ea2964d42666a6643a165",
-          "size_bytes": 8137
+          "sha256": "d1eec6bca3bab7eeaf9b9d5a13c90cb029cd59536d25d0cef8e6f7de9bc71167",
+          "size_bytes": 9136
         },
         "software-development/chat-app-validation/SKILL.md": {
           "sha256": "28f6ba9af34d133c315d6510ff61c7a0342d675d0d381a3449f6542f271404fe",
@@ -5550,7 +5550,7 @@
   },
   "root_artifacts": {
     "skills-corpus.json": {
-      "sha256": "2b386b8657c782935646fd86253ce596c9bef7e215f6952795f2a6b7aa96e37d",
+      "sha256": "0ee2ce6d468c3764d44acb94f79bb645bbc5986fdd3a11263acb7cdf697486ee",
       "size_bytes": 536493
     }
   },

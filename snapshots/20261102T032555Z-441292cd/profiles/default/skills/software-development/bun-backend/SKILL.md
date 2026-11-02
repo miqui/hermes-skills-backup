@@ -1,7 +1,7 @@
 ---
 name: bun-backend
 description: Use when building, reviewing, migrating, or troubleshooting JavaScript/TypeScript backends that intentionally use the Bun runtime, package manager, test runner, bundler, or Bun-native frameworks such as Elysia or BurgerAPI.
-version: 1.1.0
+version: 1.1.1
 author: Hermes Agent
 license: MIT
 metadata:
@@ -248,6 +248,7 @@ For non-trivial APIs, use a framework or a small routing layer rather than hand-
 ### Elysia as default framework reference
 
 Use Elysia when you want Bun-native routing, TypeScript-first ergonomics, schema validation, plugins, OpenAPI, and testable app factories. See `references/elysia.md`.
+- Scaffolding with `bun create elysia app` and runtime support: see "Getting Started" in `references/elysia.md`.
 
 ### BurgerAPI as file-routing reference
 
